@@ -50,4 +50,5 @@ final class TabBarController: UITabBarController {
         profileVc.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(named: "Person3x"), tag: 2)
         basketVc.tabBarItem = UITabBarItem(title: "Basket", image: UIImage(named: "Basket3x"), tag: 3)
     }
+    
 }
