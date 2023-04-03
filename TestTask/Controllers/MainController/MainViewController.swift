@@ -105,12 +105,12 @@ final class MainViewController: UIViewController, MainPresenterDelegate {
     }
     
     private func controllerConfiguration() {
-        view.backgroundColor = UIColor(red: 0.898, green: 0.898, blue: 0.898, alpha: 1)
-        scrollView.delegate = self
-        presenter.delegate = self
         registerCells()
         layoutElements()
         makeConstraints()
+        view.backgroundColor = UIColor(red: 0.898, green: 0.898, blue: 0.898, alpha: 1)
+        scrollView.delegate = self
+        presenter.delegate = self
     }
     
     // MARK: -
