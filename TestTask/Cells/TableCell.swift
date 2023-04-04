@@ -43,7 +43,7 @@ final class TableCell: UITableViewCell {
         return button
     }()
     
-    private var model: TotalFoodModel
+    var model: TotalFoodModel
     
     init(model: TotalFoodModel) {
         self.model = model

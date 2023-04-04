@@ -268,6 +268,16 @@ extension MainViewController: UITableViewDataSource, UITableViewDelegate {
         }
         return header
     }
+    
+    // MARK: -
+    // MARK: - Some bugs here(
+    
+//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//        guard let category = (tableView.visibleCells.first as? TableCell)?.model.category else { return }
+//        if let index = categoryArray.firstIndex(where: { $0 == category }) {
+//            selectedCategory = IndexPath(row: index, section: 0)
+//        }
+//    }
 
 }
 
