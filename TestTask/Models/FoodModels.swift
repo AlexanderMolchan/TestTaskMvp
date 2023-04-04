@@ -20,3 +20,15 @@ struct FoodModel: Decodable {
         case imageUrl = "strMealThumb"
     }
 }
+
+final class TotalFoodModel {
+    var name: String
+    var imageUrl: String
+    var category: String
+    
+    init(name: String, imageUrl: String, category: String) {
+        self.name = name
+        self.imageUrl = imageUrl
+        self.category = category
+    }
+}
