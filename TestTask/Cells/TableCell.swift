@@ -43,9 +43,9 @@ final class TableCell: UITableViewCell {
         return button
     }()
     
-    var model: TotalFoodModel
+    var model: FoodModel
     
-    init(model: TotalFoodModel) {
+    init(model: FoodModel) {
         self.model = model
         super.init(style: .default, reuseIdentifier: TableCell.id)
         layoutElements()

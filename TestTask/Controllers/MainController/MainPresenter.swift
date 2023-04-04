@@ -8,7 +8,7 @@
 import UIKit
 
 protocol MainPresenterDelegate: AnyObject {
-    func presentGroups(model: TotalFoodModel)
+    func presentGroups(model: FoodModel)
     func presentCategoryes(_ categoryes: [String])
     func loadingFailure()
     func presentFoodModel(title: String, message: String)
@@ -32,7 +32,8 @@ final class MainPresenter {
             self.delegate?.startLoading()
             GenerycProvider<FoodGroup>().getData(api: .getFoodGroyp(category: category)) { [weak self] group in
                 group.meals.forEach { [weak self] model in
-                    self?.delegate?.presentGroups(model: TotalFoodModel(name: model.name, imageUrl: model.imageUrl, category: category))
+                    model.category = category
+                    self?.delegate?.presentGroups(model: model)
                 }
                 self?.delegate?.stopLoading()
             } failure: { error in
@@ -43,8 +44,8 @@ final class MainPresenter {
         }
     }
     
-    public func selectFoodModel(model: TotalFoodModel) {
-        delegate?.presentFoodModel(title: model.name, message: model.category)
+    public func selectFoodModel(model: FoodModel) {
+        delegate?.presentFoodModel(title: model.name, message: model.category ?? "")
     }
 
 }

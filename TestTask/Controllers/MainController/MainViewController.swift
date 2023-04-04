@@ -67,7 +67,7 @@ final class MainViewController: UIViewController, MainPresenterDelegate {
     private let presenter = MainPresenter()
     private var categoryArray = [String]()
     
-    private var foodArray = [TotalFoodModel]() {
+    private var foodArray = [FoodModel]() {
         didSet {
             tableView.reloadData()
         }
@@ -110,9 +110,9 @@ final class MainViewController: UIViewController, MainPresenterDelegate {
     // MARK: -
     // MARK: - Presenter Methods
     
-    func presentGroups(model: TotalFoodModel) {
+    func presentGroups(model: FoodModel) {
         self.foodArray.append(model)
-        foodArray.sort(by: { $0.category < $1.category })
+        foodArray.sort(by: { $0.category ?? "" < $1.category ?? "" })
     }
     
     func presentCategoryes(_ categoryes: [String]) {
