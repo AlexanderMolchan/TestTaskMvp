@@ -29,7 +29,7 @@ final class MainViewController: UIViewController, MainPresenterDelegate {
         collectionView.dataSource = self
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
-        collectionView.contentInset = UIEdgeInsets(top: 12, left: 16, bottom: 0, right: 16)
+        collectionView.contentInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         return collectionView
     }()
     
@@ -50,10 +50,9 @@ final class MainViewController: UIViewController, MainPresenterDelegate {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.backgroundColor = .clear
-        tableView.isScrollEnabled = false
+        tableView.isScrollEnabled = true
         tableView.showsVerticalScrollIndicator = false
-        tableView.layer.cornerRadius = 20
-        tableView.layer.maskedCorners = [.layerMaxXMinYCorner, .layerMinXMinYCorner]
+ //       tableView.layer.maskedCorners = [.layerMaxXMinYCorner, .layerMinXMinYCorner]
         tableView.rowHeight = UITableView.noIntrinsicMetric
         return tableView
     }()
@@ -65,27 +64,10 @@ final class MainViewController: UIViewController, MainPresenterDelegate {
         return spinner
     }()
     
-    private lazy var scrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.showsVerticalScrollIndicator = false
-        return scrollView
-    }()
-    
-    private lazy var containerView: UIView = {
-        let view = UIView()
-        return view
-    }()
-    
-    private lazy var tableContainerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor(red: 0.898, green: 0.898, blue: 0.898, alpha: 1)
-        return view
-    }()
-    
     private let presenter = MainPresenter()
     private var categoryArray = [String]()
     
-    private var groups = [FoodGroup]() {
+    private var foodArray = [TotalFoodModel]() {
         didSet {
             tableView.reloadData()
         }
@@ -109,7 +91,6 @@ final class MainViewController: UIViewController, MainPresenterDelegate {
         layoutElements()
         makeConstraints()
         view.backgroundColor = UIColor(red: 0.898, green: 0.898, blue: 0.898, alpha: 1)
-        scrollView.delegate = self
         presenter.delegate = self
     }
     
@@ -129,9 +110,9 @@ final class MainViewController: UIViewController, MainPresenterDelegate {
     // MARK: -
     // MARK: - Presenter Methods
     
-    func presentGroups(group: FoodGroup) {
-        self.groups.append(group)
-        groups = groups.sorted(by: { $0.meals.count < $1.meals.count })
+    func presentGroups(model: TotalFoodModel) {
+        self.foodArray.append(model)
+        foodArray.sort(by: { $0.category < $1.category })
     }
     
     func presentCategoryes(_ categoryes: [String]) {
@@ -172,14 +153,13 @@ final class MainViewController: UIViewController, MainPresenterDelegate {
     
     private func layoutElements() {
         view.addSubview(titleButton)
-        view.addSubview(scrollView)
-        scrollView.addSubview(containerView)
-        containerView.addSubview(bannerCollectionView)
-        containerView.addSubview(tableContainerView)
-        tableContainerView.addSubview(tableView)
-        containerView.addSubview(categoryCollectionView)
+        view.addSubview(tableView)
         view.addSubview(spinner)
         view.bringSubviewToFront(spinner)
+        
+        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.bounds.width, height: 112))
+        headerView.addSubview(bannerCollectionView)
+        tableView.tableHeaderView = headerView
     }
     
     private func makeConstraints() {
@@ -188,41 +168,18 @@ final class MainViewController: UIViewController, MainPresenterDelegate {
             make.leading.equalToSuperview().offset(16)
         }
         
-        scrollView.snp.makeConstraints { make in
-            make.top.equalTo(titleButton.snp.bottom).offset(12)
-            make.leading.trailing.bottom.equalToSuperview()
-        }
-        
-        containerView.snp.makeConstraints { make in
-            make.top.bottom.equalToSuperview()
-            make.leading.trailing.equalTo(view)
-        }
-        
-        bannerCollectionView.snp.makeConstraints { make in
-            make.top.equalTo(scrollView.frameLayoutGuide)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(136)
-        }
-        
-        categoryCollectionView.snp.makeConstraints { make in
-            make.top.greaterThanOrEqualTo(scrollView.frameLayoutGuide)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(70)
-        }
-        
-        tableContainerView.snp.makeConstraints { make in
-            make.top.equalTo(categoryCollectionView.snp.bottom).priority(.low)
-            make.top.equalTo(scrollView.contentLayoutGuide).offset(206)
-            make.leading.trailing.bottom.equalToSuperview()
-        }
-        
         tableView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.top.equalTo(titleButton.snp.bottom).inset(-16)
+            make.leading.trailing.bottom.equalToSuperview()
             make.height.equalTo(20)
         }
         
         spinner.snp.makeConstraints { make in
             make.center.equalToSuperview()
+        }
+        
+        bannerCollectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
     }
     
@@ -274,16 +231,11 @@ extension MainViewController: UICollectionViewDataSource, UICollectionViewDelega
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == categoryCollectionView {
-            guard !groups.isEmpty else { return }
-            categoryCollectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
-            var contentInset = 0.0
-            for i in 0..<indexPath.row {
-                contentInset += Double(groups[i].meals.count)
-            }
-            guard let cellHeight = tableView.visibleCells.first?.bounds.height else { return }
-            scrollView.setContentOffset(CGPoint(x: 0, y: indexPath.row == 0 ? (cellHeight * contentInset) : (cellHeight * contentInset) - 30), animated: true)
-            
             selectedCategory = indexPath
+            collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+            if let index = foodArray.firstIndex(where: { $0.category == categoryArray[indexPath.row] }) {
+                tableView.scrollToRow(at: IndexPath(row: index, section: 0), at: .top, animated: true)
+            }
         }
     }
     
@@ -293,43 +245,29 @@ extension MainViewController: UICollectionViewDataSource, UICollectionViewDelega
 // MARK: - TableView Extension
 
 extension MainViewController: UITableViewDataSource, UITableViewDelegate {
-    func numberOfSections(in tableView: UITableView) -> Int {
-        groups.count
-    }
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        groups[section].meals.count
+        foodArray.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return TableCell(model: groups[indexPath.section].meals[indexPath.row])
+        return TableCell(model: foodArray[indexPath.row])
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        presenter.selectFoodModel(model: groups[indexPath.section].meals[indexPath.row])
+        presenter.selectFoodModel(model: foodArray[indexPath.row])
     }
     
-    // MARK: -
-    // MARK: - Some bugs there :(
-
-//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        guard let cellHeight = tableView.visibleCells.first?.bounds.height,
-//              groups.count == 4 else { return }
-//        let firstGroupBorder = Double(groups.first?.meals.count ?? 0) * cellHeight - 40
-//        let secondGroupBorder = (Double(groups[1].meals.count) * cellHeight) + firstGroupBorder
-//        let thirdGroupBorder = (Double(groups[2].meals.count) * cellHeight) + secondGroupBorder
-//        let fourGroupBorder = (Double(groups[3].meals.count) * cellHeight) + thirdGroupBorder
-//
-//        if scrollView.contentOffset.y < firstGroupBorder {
-//            selectedCategory = IndexPath(row: 0, section: 0)
-//        } else if scrollView.contentOffset.y < secondGroupBorder {
-//            selectedCategory = IndexPath(row: 1, section: 0)
-//        } else if scrollView.contentOffset.y < thirdGroupBorder {
-//            selectedCategory = IndexPath(row: 2, section: 0)
-//        } else if scrollView.contentOffset.y < fourGroupBorder {
-//            selectedCategory = IndexPath(row: 3, section: 0)
-//        }
-//    }
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 0))
+        header.backgroundColor = UIColor(red: 0.898, green: 0.898, blue: 0.898, alpha: 1)
+        header.addSubview(categoryCollectionView)
+        categoryCollectionView.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.top.bottom.equalToSuperview().inset(5)
+            make.height.equalTo(32)
+        }
+        return header
+    }
 
 }
 
